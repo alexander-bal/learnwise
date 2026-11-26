@@ -1,0 +1,18 @@
+{
+  "name": "learnwise",
+  "private": true,
+  "packageManager": "pnpm@10.14.0",
+  "scripts": {
+    "bootstrap": "pnpm install --frozen-lockfile && uv --directory apps/backend sync --locked",
+    "dev": "concurrently --names sim,api,worker,web --prefix-colors cyan,green,yellow,magenta --restart-tries -1 --restart-after 1000 \"pnpm dev:sim\" \"pnpm dev:api\" \"pnpm dev:worker\" \"pnpm dev:web\"",
+    "dev:sim": "uv --directory apps/backend run python -m app.simulator",
+    "dev:api": "ROLE=api uv --directory apps/backend run python -m app",
+    "dev:worker": "ROLE=worker uv --directory apps/backend run python -m app",
+    "dev:web": "pnpm --filter frontend dev",
+    "test": "uv --directory apps/backend run pytest",
+    "lint": "uv --directory apps/backend run ruff check && uv --directory apps/backend run ruff format --check && uv --directory apps/backend run ty check src tests && pnpm --filter frontend typecheck"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7"
+  }
+}
