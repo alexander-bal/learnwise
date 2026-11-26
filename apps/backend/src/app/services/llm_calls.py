@@ -70,7 +70,6 @@ async def list_requests(session: AsyncSession, *, limit: int, offset: int) -> di
             func.count().label("attempts"),
             func.sum(LlmCall.duration_ms).label("total_duration_ms"),
             func.max(LlmCall.sample_id).label("sample_id"),
-            func.max(LlmCall.attempt).label("last_attempt"),
             func.min(LlmCall.provider).label("provider"),
             func.min(LlmCall.model).label("model"),
             func.min(LlmCall.prompt_version_id).label("prompt_version_id"),
@@ -79,42 +78,49 @@ async def list_requests(session: AsyncSession, *, limit: int, offset: int) -> di
         .group_by(LlmCall.request_id)
         .subquery()
     )
+    # Exactly one row per request id, so LIMIT and OFFSET count requests. A reused
+    # X-Request-ID can leave several calls at the same last attempt number.
+    last = (
+        select(
+            LlmCall.request_id,
+            LlmCall.status,
+            LlmCall.error_code,
+            func.row_number()
+            .over(
+                partition_by=LlmCall.request_id,
+                order_by=(LlmCall.attempt.desc(), LlmCall.created_at.desc(), LlmCall.id.desc()),
+            )
+            .label("rank"),
+        )
+        .where(LlmCall.operation == "process")
+        .subquery()
+    )
     total = await session.scalar(select(func.count()).select_from(latest))
     rows = (
         await session.execute(
-            select(latest, LlmCall.status, LlmCall.error_code)
-            .join(
-                LlmCall,
-                (LlmCall.request_id == latest.c.request_id)
-                & (LlmCall.attempt == latest.c.last_attempt)
-                & (LlmCall.operation == "process"),
-            )
+            select(latest, last.c.status, last.c.error_code)
+            .join(last, (last.c.request_id == latest.c.request_id) & (last.c.rank == 1))
             .order_by(latest.c.started_at.desc())
             .limit(limit)
             .offset(offset)
         )
     ).all()
-    items = []
-    seen: set[str] = set()
-    for row in rows:
-        if row.request_id in seen:  # two calls with the same last attempt number
-            continue
-        seen.add(row.request_id)
-        items.append(
-            {
-                "request_id": row.request_id,
-                "started_at": row.started_at,
-                "ended_at": row.ended_at,
-                "attempts": row.attempts,
-                "total_duration_ms": row.total_duration_ms,
-                "sample_id": row.sample_id,
-                "provider": row.provider,
-                "model": row.model,
-                "prompt_version_id": row.prompt_version_id,
-                "status": row.status,
-                "error_code": row.error_code,
-            }
-        )
+    items = [
+        {
+            "request_id": row.request_id,
+            "started_at": row.started_at,
+            "ended_at": row.ended_at,
+            "attempts": row.attempts,
+            "total_duration_ms": row.total_duration_ms,
+            "sample_id": row.sample_id,
+            "provider": row.provider,
+            "model": row.model,
+            "prompt_version_id": row.prompt_version_id,
+            "status": row.status,
+            "error_code": row.error_code,
+        }
+        for row in rows
+    ]
     return {"total": total or 0, "items": items}
 
 

@@ -30,3 +30,39 @@ async def test_the_console_reads_back_a_request_its_calls_sample_and_key(
     assert [s["id"] for s in detail["samples"]] == [sample_id]
     assert detail["idempotency"][0]["key"] == "k"
     assert (await client.get("/requests/nope")).status_code == 404
+
+
+async def _process(client: httpx.AsyncClient, request_id: str) -> None:
+    await client.post(
+        "/process", json={"message": "shipping"}, headers={"X-Request-ID": request_id}
+    )
+
+
+async def test_requests_pages_walk_the_list_newest_first(
+    client: httpx.AsyncClient, sim: Sim
+) -> None:
+    for request_id in ("a", "b", "c"):
+        await _process(client, request_id)
+
+    pages = [
+        (await client.get("/requests", params={"limit": 1, "offset": offset})).json()
+        for offset in range(3)
+    ]
+
+    assert [p["total"] for p in pages] == [3, 3, 3]
+    assert [[r["request_id"] for r in p["items"]] for p in pages] == [["c"], ["b"], ["a"]]
+
+
+async def test_requests_pages_list_a_reused_request_id_once_and_stay_full(
+    client: httpx.AsyncClient, sim: Sim
+) -> None:
+    # Both "dup" calls end at attempt 1, so each request id is one row however often it ran.
+    for request_id in ("a", "b", "dup", "dup"):
+        await _process(client, request_id)
+
+    first = (await client.get("/requests", params={"limit": 2})).json()
+    second = (await client.get("/requests", params={"limit": 2, "offset": 2})).json()
+
+    assert first["total"] == 3
+    assert [r["request_id"] for r in first["items"]] == ["dup", "b"]
+    assert [r["request_id"] for r in second["items"]] == ["a"]
