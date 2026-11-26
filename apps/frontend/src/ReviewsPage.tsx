@@ -108,15 +108,10 @@ function StartReview({ onStarted }: { onStarted: () => void }) {
 
 function Outcome({ review }: { review: Pick<Review, "status" | "outcome"> }) {
   return (
-    <>
+    <span className="badges">
       <Badge value={review.status} />
-      {review.outcome && (
-        <>
-          {" "}
-          <Badge value={review.outcome} />
-        </>
-      )}
-    </>
+      {review.outcome && <Badge value={review.outcome} />}
+    </span>
   );
 }
 

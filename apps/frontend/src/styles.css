@@ -184,6 +184,16 @@ td time {
   border: 1px solid currentColor;
   font-size: 0.8rem;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Several badges in one place: even spacing whether they sit in a row or stack */
+.badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.3rem;
+  vertical-align: top;
 }
 
 .badge-active {
