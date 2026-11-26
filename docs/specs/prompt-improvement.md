@@ -78,7 +78,8 @@ A call that still ends as `OutputInvalid` or `ProviderRejected` after its attemp
 - A review SHALL end as `failed`, with its last error, at once on `ProviderMisconfigured`, and with `review_expired` when it has been open for 24 hours (configurable). Its samples are not used up, so a new review selects and judges them again.
 - While an attempt runs, the worker SHALL hold a lease on the review, 60 seconds long and renewed every 20 seconds (configurable). Claiming a review, or ending the attempt of one whose lease expired, SHALL be a single atomic write that succeeds for one worker only, and only the lease holder SHALL write the review or its results.
 - A review left `running` whose lease has expired SHALL be treated as an attempt ended with `interrupted`, and its LLM calls left `running` SHALL be closed as errors with the code `interrupted`, in the same transaction. None of this SHALL delay `/process`.
-- How the worker stops on a termination signal or a newer schema is specified in [Processing FR-5](processing.md#fr-5-process-lifecycle).
+- On a termination signal the worker SHALL stop after its call in flight, cancelling that call when the shutdown grace period of [Processing FR-5](processing.md#fr-5-process-lifecycle), 25 seconds, is over.
+- The worker SHALL refuse to start on a schema newer than its code. A running worker that finds the schema newer than its code SHALL stop as on a termination signal and exit with a non-zero code, so its supervisor starts it again on the new code. The worker SHALL NOT restart itself.
 
 ## Non-Functional Requirements
 

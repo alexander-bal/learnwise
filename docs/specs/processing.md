@@ -83,9 +83,9 @@ The prompt improves through reviews, which are specified in [prompt-improvement.
 
 - Work in flight SHALL be owned through a lease in the DB, never through a process lock, so a process SHALL NOT take over at startup what another process may still own, and a second process of a role MAY run on the same database. A crashed process's work SHALL be taken over once its lease expires: an idempotency record left `processing` as in FR-3, a review as in [Prompt Improvement FR-3](prompt-improvement.md#fr-3-crash-recovery).
 - LLM calls left `running` that belong to no review SHALL be closed as errors with the code `interrupted` once they are older than the request deadline, so no call still in flight is closed. The API SHALL check at startup and every minute. None of this SHALL delay `/process`.
-- On a termination signal the API SHALL stop accepting requests and let requests in flight finish within 25 seconds; the worker SHALL stop after its call in flight, cancelling that call when the 25 seconds are over.
+- On a termination signal the API SHALL stop accepting requests and let requests in flight finish within 25 seconds.
 - Migrations SHALL run in one immediate transaction that checks the schema version before applying anything, so processes starting together apply them once.
-- A process SHALL refuse to start on a schema newer than its code. A running worker that finds the schema newer than its code SHALL stop as on a termination signal and exit with a non-zero code, so its supervisor starts it again on the new code. A process SHALL NOT restart itself.
+- The API SHALL refuse to start on a schema newer than its code, and SHALL NOT restart itself.
 
 ### FR-6: Health Checks
 
