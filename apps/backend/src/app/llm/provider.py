@@ -37,6 +37,8 @@ class Providers:
         self._current = name
         if changed:
             log.info("provider switched", extra={"provider": name})
+        if changed:
+            self.last_warmup = None
         if name == "ollama" and self._settings.keep_model_warm and (changed or not self._warmups):
             self.start_warm_up()
         return self.current
@@ -51,7 +53,9 @@ class Providers:
         # A load request, not a model call: no pool slot, no breaker, no retry, no call log.
         self.last_warmup = "loading"
         try:
-            await self.adapter_for(profile).warm_up(profile.processing_model)
+            await self.adapter_for(profile).warm_up(
+                profile.processing_model, self._settings.processing_num_ctx
+            )
         except Exception as exc:
             self.last_warmup = "failed"
             log.warning(

@@ -33,6 +33,9 @@ class ModelSettings:
     seed: int
     temperature: float = 0.0
     think: bool = False
+    # Ollama unloads a model 5 minutes after a call that sets no keep_alive, so a call on a
+    # model to keep warm sets -1. Not a recorded setting: it does not change the output.
+    keep_alive: int | None = None
 
     def as_options(self) -> dict[str, Any]:
         return {
@@ -108,6 +111,8 @@ class OllamaAdapter:
             "think": settings.think,
             "options": settings.as_options(),
         }
+        if settings.keep_alive is not None:
+            body["keep_alive"] = settings.keep_alive
         try:
             response = await self._client.post("/api/chat", json=body)
         except httpx.HTTPError as exc:
@@ -148,10 +153,16 @@ class OllamaAdapter:
             provider_request_id=response.headers.get("X-Request-ID"),
         )
 
-    async def warm_up(self, model: str) -> None:
-        """Load the model and keep it loaded. A load request, not a model call (NFR-5)."""
+    async def warm_up(self, model: str, num_ctx: int) -> None:
+        """Load the model and keep it loaded. A load request, not a model call (NFR-5).
+
+        The context window is the one calls use: Ollama reloads a model whose loaded context
+        differs from the request's.
+        """
         response = await self._client.post(
-            "/api/generate", json={"model": model, "keep_alive": -1}, timeout=120
+            "/api/generate",
+            json={"model": model, "keep_alive": -1, "options": {"num_ctx": num_ctx}},
+            timeout=120,
         )
         response.raise_for_status()
 

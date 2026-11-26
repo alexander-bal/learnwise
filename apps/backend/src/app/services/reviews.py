@@ -4,7 +4,7 @@ import asyncio
 import json
 import logging
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from sqlalchemy import JSON, func, insert, select, update
@@ -510,7 +510,10 @@ class ReviewRunner:
         self._profile = settings.profiles()[review.provider]  # ty: ignore[invalid-argument-type]
         config = {**evaluation_config(settings), **json.loads(review.evaluation_config or "{}")}
         self._sample_limit = int(config["sample_limit"])
-        self._processing_settings = ModelSettings(**config["processing"])
+        self._processing_settings = replace(
+            ModelSettings(**config["processing"]),
+            keep_alive=-1 if settings.keep_model_warm else None,
+        )
         self._judge_settings = ModelSettings(**config["judge"])
         self._messages_max_chars = int(config["proposal_messages_max_chars"])
         self._proposal_schema = proposal_schema(

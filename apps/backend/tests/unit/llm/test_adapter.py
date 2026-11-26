@@ -107,3 +107,50 @@ def test_retry_after_is_read_as_seconds_or_an_http_date() -> None:
     assert parse_retry_after("soon") is None
     later = format_datetime(datetime.now(UTC) + timedelta(seconds=30), usegmt=True)
     assert 28 <= (parse_retry_after(later) or 0) <= 30
+
+
+async def test_keep_alive_is_sent_only_when_the_settings_ask_for_it() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return answer('{"intent": "billing", "urgency": "low"}')
+
+    adapter = OllamaAdapter("http://model", transport=httpx.MockTransport(handler))
+    try:
+        for keep_alive in (None, -1):
+            await adapter.chat(
+                model="m",
+                prompt="P",
+                content="C",
+                output_schema=TriageRecord,
+                settings=ModelSettings(
+                    num_ctx=8192, num_predict=256, seed=42, keep_alive=keep_alive
+                ),
+            )
+    finally:
+        await adapter.aclose()
+
+    assert "keep_alive" not in json.loads(seen[0].content)
+    assert json.loads(seen[1].content)["keep_alive"] == -1
+
+
+async def test_warm_up_loads_the_model_with_the_context_window_calls_use() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json={"done": True})
+
+    adapter = OllamaAdapter("http://model", transport=httpx.MockTransport(handler))
+    try:
+        await adapter.warm_up("m", 8192)
+    finally:
+        await adapter.aclose()
+
+    assert seen[0].url.path == "/api/generate"
+    assert json.loads(seen[0].content) == {
+        "model": "m",
+        "keep_alive": -1,
+        "options": {"num_ctx": 8192},
+    }

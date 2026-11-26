@@ -86,6 +86,7 @@ class ProcessingService:
             num_ctx=settings.processing_num_ctx,
             num_predict=settings.processing_num_predict,
             seed=settings.model_seed,
+            keep_alive=-1 if settings.keep_model_warm else None,
         )
 
     def validate(self, message: str) -> ProcessResult | None:
