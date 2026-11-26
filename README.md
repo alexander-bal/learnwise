@@ -71,6 +71,17 @@ With the simulator, use keywords like `billing`, `shipping`, or `technical issue
 
 Processed messages appear on the [Samples page](http://localhost:3000/samples). You can see all prompt versions on the [Prompts page](http://localhost:3000/prompts). The first prompt version is created automatically.
 
+#### The initial prompt is flawed on purpose
+
+The initial prompt leaves `billing` out of its intent list and tells the model never to answer it, so a real model gets billing messages wrong. This gives a review errors to fix without extra setup. Try it with a real model (the `ollama` provider):
+
+1. Process a few billing messages, such as `I was charged twice for my March subscription.`
+2. Start a review. The judge marks the base answers as errors, proposes a better prompt, and the candidate scores higher.
+
+The simulator does not follow this rule. It counts an intent as named if the prompt mentions it at all, so with the simulator billing messages still come back as `billing`. To get errors there, use `cancellation` or `account` messages, which the initial prompt never names.
+
+The prompt is defined in `apps/backend/src/app/db/migrations/versions/0001_initial_schema.py`. It is only written when the database is created, so recreate `apps/backend/var/app.db` after changing it.
+
 Use the [Simulator page](http://localhost:3000/simulator) to try different failure scenarios. On the [Reviews page](http://localhost:3000/reviews), you can see previous reviews and start a new one.
 
 ### Try the API with curl

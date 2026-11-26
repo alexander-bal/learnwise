@@ -17,7 +17,8 @@ depends_on: str | Sequence[str] | None = None
 
 INITIAL_PROMPT = """You triage customer support messages. Return a triage record for the message.
 
-intent: billing, shipping, technical_issue, or other when none of these fits.
+intent: shipping, technical_issue, or other when none of these fits.
+Never answer billing as the intent: a message about charges or payments is other.
 urgency: high when the customer needs help immediately, low when it can wait, otherwise normal.
 
 Answer with the triage record only."""
