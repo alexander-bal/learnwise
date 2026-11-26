@@ -4,8 +4,8 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.requests import Request
 
-from app.api.middleware import request_context
-from app.api.routes import health, prompts
+from app.api.middleware import RequestContextMiddleware
+from app.api.routes import health, process, prompts, provider, records
 from app.lifespan import lifespan
 
 
@@ -29,11 +29,14 @@ async def _validation_error(_request: Request, exc: Exception) -> JSONResponse:
 
 def create_app() -> FastAPI:
     app = FastAPI(title="AI Ticket Triage Service", lifespan=lifespan)
-    app.middleware("http")(request_context)
+    app.add_middleware(RequestContextMiddleware)
     app.add_exception_handler(StarletteHTTPException, _http_error)
     app.add_exception_handler(RequestValidationError, _validation_error)
     app.include_router(health.router)
     app.include_router(prompts.router)
+    app.include_router(process.router)
+    app.include_router(records.router)
+    app.include_router(provider.router)
     return app
 
 

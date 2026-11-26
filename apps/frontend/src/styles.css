@@ -181,3 +181,283 @@ td time {
 .badge-rejected {
   color: var(--warn);
 }
+
+.topbar nav {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+h2 {
+  font-size: 1.15rem;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.card h2:first-child,
+.heading-row h2 {
+  margin-top: 0;
+}
+
+h3 {
+  font-size: 1rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.heading-row h1 {
+  margin-bottom: 0;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.form label,
+.field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+textarea[aria-invalid="true"] {
+  border-color: var(--bad);
+}
+
+.hint {
+  margin: 0.25rem 0 1rem;
+  font-size: 0.85rem;
+}
+
+.hint-bad {
+  color: var(--bad);
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.field {
+  flex: 1 1 18rem;
+}
+
+.field input {
+  width: 100%;
+}
+
+.inline {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--surface);
+  font-weight: 600;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.result-error {
+  border-color: var(--bad);
+}
+
+.result h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.4rem 1.25rem;
+  margin: 0.75rem 0;
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  margin: 0;
+}
+
+.pre {
+  white-space: pre-wrap;
+}
+
+.mono,
+code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.filters label {
+  font-weight: 600;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.detail {
+  border-color: var(--accent);
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.switch {
+  position: relative;
+  width: 3rem;
+  height: 1.6rem;
+  padding: 0;
+  border-radius: 999px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.switch-on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.switch-thumb {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: transform 0.15s;
+}
+
+.switch-on .switch-thumb {
+  transform: translateX(1.4rem);
+}
+
+.breaker {
+  margin-right: 1rem;
+  white-space: nowrap;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.badge-success,
+.badge-completed,
+.badge-closed {
+  color: var(--ok);
+}
+
+.badge-error,
+.badge-failed,
+.badge-open,
+.badge-urgency-high {
+  color: var(--bad);
+}
+
+.badge-timeout,
+.badge-retryable_failed,
+.badge-half_open,
+.badge-processing,
+.badge-running,
+.badge-replayed {
+  color: var(--warn);
+}
+
+.badge-urgency-normal,
+.badge-urgency-low {
+  color: var(--muted);
+}
+
+.badge-billing,
+.badge-shipping,
+.badge-technical_issue,
+.badge-account,
+.badge-cancellation {
+  color: var(--accent);
+}
+
+.badge-other {
+  color: var(--muted);
+}
+
+main:focus,
+h2[tabindex="-1"]:focus {
+  outline: none;
+}

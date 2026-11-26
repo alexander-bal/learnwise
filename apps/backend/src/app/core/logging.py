@@ -37,3 +37,5 @@ def configure_logging(level: str) -> None:
         logging.getLogger(name).propagate = True
     # Request lines are logged by our own middleware, with the request id.
     logging.getLogger("uvicorn.access").disabled = True
+    # The LLM call log records each model call; httpx would repeat it once per request.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
