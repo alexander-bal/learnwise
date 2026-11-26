@@ -1,0 +1,82 @@
+{
+  "name": "10-shipping-low-urgency",
+  "scenario": "Success on prompt v2 with Ollama: `shipping` with `low` urgency.",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:4000/process",
+    "headers": {
+      "Content-Type": "application/json",
+      "Idempotency-Key": "566de26f-43df-4d12-83d4-aa6c1d63a051"
+    },
+    "body": {
+      "message": "I have a problem with shipping, not urgent"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d88597fc006b46fd9a09070f8678efd0"
+    },
+    "body": {
+      "request_id": "d88597fc006b46fd9a09070f8678efd0",
+      "sample_id": "4c9f9dd23ac84fd0b29dd8efb1406c5d",
+      "prompt_version": 2,
+      "record": {
+        "intent": "shipping",
+        "urgency": "low"
+      }
+    }
+  },
+  "observed": {
+    "provider": "ollama",
+    "model": "qwen3:0.6b",
+    "model_config": {
+      "num_ctx": 8192,
+      "num_predict": 256,
+      "seed": 42,
+      "temperature": 0.0,
+      "think": false
+    },
+    "prompt_version": 2,
+    "sample": {
+      "id": "4c9f9dd23ac84fd0b29dd8efb1406c5d",
+      "input": "I have a problem with shipping, not urgent",
+      "output": {
+        "intent": "shipping",
+        "urgency": "low"
+      },
+      "created_at": "2026-11-26T17:49:25.182Z"
+    },
+    "llm_calls": [
+      {
+        "attempt": 1,
+        "operation": "process",
+        "provider": "ollama",
+        "model": "qwen3:0.6b",
+        "prompt_version_id": 2,
+        "status": "success",
+        "error_code": null,
+        "error_message": null,
+        "input_tokens": 91,
+        "output_tokens": 14,
+        "duration_ms": 168,
+        "created_at": "2026-11-26T17:49:25.008Z"
+      }
+    ],
+    "idempotency_record": {
+      "key": "566de26f-43df-4d12-83d4-aa6c1d63a051",
+      "status": "completed",
+      "request_hash": "e4fd12f62b73517a3ebc7587a3cb6d2979d3248c9993717052657069c955db81",
+      "response_status": 200,
+      "sample_id": "4c9f9dd23ac84fd0b29dd8efb1406c5d",
+      "created_at": "2026-11-26T17:49:24.998Z",
+      "updated_at": "2026-11-26T17:49:25.186Z"
+    }
+  },
+  "sources": [
+    "idempotency_requests",
+    "samples",
+    "llm_calls"
+  ]
+}

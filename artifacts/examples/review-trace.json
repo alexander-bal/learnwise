@@ -1,0 +1,352 @@
+{
+  "review_id": "2a5c9d5acb2043698f2e147f66948892",
+  "summary": "Review of prompt v1 on 3 samples: 3 base outputs in error, the judge proposed v2, candidate scored 6 against 3, outcome `promoted`.",
+  "1_start": {
+    "request": {
+      "method": "POST",
+      "url": "http://localhost:4000/reviews"
+    },
+    "response": {
+      "status": 202,
+      "headers": {
+        "X-Request-ID": "630e2bca4df541c180c2d987793f6ad4"
+      },
+      "body": {
+        "review_id": "2a5c9d5acb2043698f2e147f66948892",
+        "status": "pending"
+      }
+    },
+    "review": {
+      "status": "completed",
+      "outcome": "promoted",
+      "attempts": 1,
+      "provider": "ollama",
+      "judge_model": "qwen3:8b",
+      "processing_model": "qwen3:0.6b",
+      "created_at": "2026-11-26T17:38:04.475Z",
+      "started_at": "2026-11-26T17:38:04.839Z",
+      "completed_at": "2026-11-26T17:38:31.900Z",
+      "expires_at": "2026-11-27T17:38:04.475Z",
+      "evaluation_config": {
+        "judge": {
+          "num_ctx": 16384,
+          "num_predict": 4608,
+          "seed": 42,
+          "temperature": 0.0,
+          "think": false
+        },
+        "processing": {
+          "num_ctx": 8192,
+          "num_predict": 256,
+          "seed": 42,
+          "temperature": 0.0,
+          "think": false
+        },
+        "proposal_messages_max_chars": 6000,
+        "proposal_prompt_max_chars": 4000,
+        "proposal_reason_max_chars": 500,
+        "sample_limit": 10
+      }
+    }
+  },
+  "2_samples_reviewed": [
+    {
+      "sample_id": "efd349d2ae0c42cbbc2e33aa0c222aee",
+      "message": "billing 1",
+      "created_at": "2026-11-26T17:37:33.955Z",
+      "prompt_version": 1,
+      "output": {
+        "intent": "other",
+        "urgency": "high"
+      },
+      "provider": "ollama",
+      "model": "qwen3:0.6b"
+    },
+    {
+      "sample_id": "d32030691da243cd8b1c2a18ea910029",
+      "message": "billing 2",
+      "created_at": "2026-11-26T17:37:40.622Z",
+      "prompt_version": 1,
+      "output": {
+        "intent": "other",
+        "urgency": "high"
+      },
+      "provider": "ollama",
+      "model": "qwen3:0.6b"
+    },
+    {
+      "sample_id": "d24d41530ab34ec3b0bd09923a0e3349",
+      "message": "billing 3",
+      "created_at": "2026-11-26T17:37:48.798Z",
+      "prompt_version": 1,
+      "output": {
+        "intent": "other",
+        "urgency": "high"
+      },
+      "provider": "ollama",
+      "model": "qwen3:0.6b"
+    }
+  ],
+  "3_base_judgments": [
+    {
+      "sample_id": "efd349d2ae0c42cbbc2e33aa0c222aee",
+      "message": "billing 1",
+      "output": {
+        "intent": "other",
+        "urgency": "high"
+      },
+      "judge_expected": {
+        "intent": "billing",
+        "urgency": "high"
+      },
+      "in_error": true,
+      "points": 1,
+      "judge_explanation": "The message explicitly mentions 'billing', so the intent should be 'billing'. The urgency is high because billing issues often require immediate attention."
+    },
+    {
+      "sample_id": "d32030691da243cd8b1c2a18ea910029",
+      "message": "billing 2",
+      "output": {
+        "intent": "other",
+        "urgency": "high"
+      },
+      "judge_expected": {
+        "intent": "billing",
+        "urgency": "high"
+      },
+      "in_error": true,
+      "points": 1,
+      "judge_explanation": "The message explicitly mentions 'billing', so the intent is correctly categorized as billing. The urgency is high because billing issues often require immediate attention."
+    },
+    {
+      "sample_id": "d24d41530ab34ec3b0bd09923a0e3349",
+      "message": "billing 3",
+      "output": {
+        "intent": "other",
+        "urgency": "high"
+      },
+      "judge_expected": {
+        "intent": "billing",
+        "urgency": "high"
+      },
+      "in_error": true,
+      "points": 1,
+      "judge_explanation": "The message explicitly mentions 'billing', so the intent is correctly categorized as billing. The urgency is high because billing issues often require immediate attention."
+    }
+  ],
+  "4_proposed_prompt_change": {
+    "base_prompt": {
+      "id": 1,
+      "content": "You triage customer support messages. Return a triage record for the message.\n\nintent: shipping, technical_issue, or other when none of these fits.\nNever answer billing as the intent: a message about charges or payments is other.\nurgency: high when the customer needs help immediately, low when it can wait, otherwise normal.\n\nAnswer with the triage record only.",
+      "change_reason": "Initial prompt",
+      "created_at": "2026-11-26T17:34:52.962Z"
+    },
+    "candidate_prompt": {
+      "id": 2,
+      "parent_id": 1,
+      "content": "You triage customer support messages. Return a triage record for the message.\n\nintent: shipping, technical_issue, billing, or other when none of these fits.\nurgency: high when the customer needs help immediately, low when it can wait, otherwise normal.\n\nAnswer with the triage record only.",
+      "change_reason": "Added 'billing' as a valid intent to correctly categorize messages related to charges or payments, which were previously misclassified as 'other'.",
+      "created_at": "2026-11-26T17:38:22.868Z"
+    },
+    "diff": [
+      "--- prompt_v1",
+      "+++ prompt_v2",
+      "@@ -1,7 +1,6 @@",
+      " You triage customer support messages. Return a triage record for the message.",
+      " ",
+      "-intent: shipping, technical_issue, or other when none of these fits.",
+      "-Never answer billing as the intent: a message about charges or payments is other.",
+      "+intent: shipping, technical_issue, billing, or other when none of these fits.",
+      " urgency: high when the customer needs help immediately, low when it can wait, otherwise normal.",
+      " ",
+      " Answer with the triage record only."
+    ]
+  },
+  "5_candidate_rerun_judgments": [
+    {
+      "sample_id": "efd349d2ae0c42cbbc2e33aa0c222aee",
+      "message": "billing 1",
+      "output": {
+        "intent": "billing",
+        "urgency": "high"
+      },
+      "judge_expected": {
+        "intent": "billing",
+        "urgency": "high"
+      },
+      "in_error": false,
+      "points": 2,
+      "judge_explanation": "The message 'billing 1' clearly refers to a billing-related issue, and the urgency is high as the customer likely needs immediate assistance with their billing."
+    },
+    {
+      "sample_id": "d32030691da243cd8b1c2a18ea910029",
+      "message": "billing 2",
+      "output": {
+        "intent": "billing",
+        "urgency": "high"
+      },
+      "judge_expected": {
+        "intent": "billing",
+        "urgency": "high"
+      },
+      "in_error": false,
+      "points": 2,
+      "judge_explanation": "The message explicitly mentions 'billing', indicating a billing-related issue, and 'high' urgency is appropriate as billing issues often require prompt attention."
+    },
+    {
+      "sample_id": "d24d41530ab34ec3b0bd09923a0e3349",
+      "message": "billing 3",
+      "output": {
+        "intent": "billing",
+        "urgency": "high"
+      },
+      "judge_expected": {
+        "intent": "billing",
+        "urgency": "high"
+      },
+      "in_error": false,
+      "points": 2,
+      "judge_explanation": "The message explicitly mentions 'billing', indicating a clear intent related to billing. The urgency is high as the customer is likely seeking immediate resolution."
+    }
+  ],
+  "6_decision": {
+    "rule": "Promote only if the candidate scores higher than the base prompt; a tie keeps the base prompt. An output scores 1 point per field (intent, urgency) equal to the judge's record.",
+    "base_score": 3,
+    "candidate_score": 6,
+    "max_score": 6,
+    "outcome": "promoted",
+    "active_prompt_version_after": 2,
+    "active_pointer_updated_at": "2026-11-26T17:38:31.898Z",
+    "completed_at": "2026-11-26T17:38:31.900Z"
+  },
+  "llm_calls": [
+    {
+      "operation": "judge",
+      "sample_id": "d24d41530ab34ec3b0bd09923a0e3349",
+      "prompt_version_id": 1,
+      "model": "qwen3:8b",
+      "attempt": 1,
+      "status": "success",
+      "input_tokens": 154,
+      "output_tokens": 51,
+      "duration_ms": 7054,
+      "created_at": "2026-11-26T17:38:04.887Z"
+    },
+    {
+      "operation": "judge",
+      "sample_id": "d32030691da243cd8b1c2a18ea910029",
+      "prompt_version_id": 1,
+      "model": "qwen3:8b",
+      "attempt": 1,
+      "status": "success",
+      "input_tokens": 154,
+      "output_tokens": 51,
+      "duration_ms": 2390,
+      "created_at": "2026-11-26T17:38:11.962Z"
+    },
+    {
+      "operation": "judge",
+      "sample_id": "efd349d2ae0c42cbbc2e33aa0c222aee",
+      "prompt_version_id": 1,
+      "model": "qwen3:8b",
+      "attempt": 1,
+      "status": "success",
+      "input_tokens": 154,
+      "output_tokens": 50,
+      "duration_ms": 2400,
+      "created_at": "2026-11-26T17:38:14.362Z"
+    },
+    {
+      "operation": "improve_prompt",
+      "sample_id": null,
+      "prompt_version_id": 1,
+      "model": "qwen3:8b",
+      "attempt": 1,
+      "status": "success",
+      "input_tokens": 336,
+      "output_tokens": 105,
+      "duration_ms": 6064,
+      "created_at": "2026-11-26T17:38:16.791Z"
+    },
+    {
+      "operation": "evaluate_candidate",
+      "sample_id": "d24d41530ab34ec3b0bd09923a0e3349",
+      "prompt_version_id": 2,
+      "model": "qwen3:0.6b",
+      "attempt": 1,
+      "status": "success",
+      "input_tokens": 85,
+      "output_tokens": 14,
+      "duration_ms": 1216,
+      "created_at": "2026-11-26T17:38:22.875Z"
+    },
+    {
+      "operation": "evaluate_candidate",
+      "sample_id": "d32030691da243cd8b1c2a18ea910029",
+      "prompt_version_id": 2,
+      "model": "qwen3:0.6b",
+      "attempt": 1,
+      "status": "success",
+      "input_tokens": 85,
+      "output_tokens": 14,
+      "duration_ms": 141,
+      "created_at": "2026-11-26T17:38:24.110Z"
+    },
+    {
+      "operation": "evaluate_candidate",
+      "sample_id": "efd349d2ae0c42cbbc2e33aa0c222aee",
+      "prompt_version_id": 2,
+      "model": "qwen3:0.6b",
+      "attempt": 1,
+      "status": "success",
+      "input_tokens": 85,
+      "output_tokens": 14,
+      "duration_ms": 127,
+      "created_at": "2026-11-26T17:38:24.262Z"
+    },
+    {
+      "operation": "judge",
+      "sample_id": "d24d41530ab34ec3b0bd09923a0e3349",
+      "prompt_version_id": 2,
+      "model": "qwen3:8b",
+      "attempt": 1,
+      "status": "success",
+      "input_tokens": 154,
+      "output_tokens": 51,
+      "duration_ms": 2502,
+      "created_at": "2026-11-26T17:38:24.406Z"
+    },
+    {
+      "operation": "judge",
+      "sample_id": "d32030691da243cd8b1c2a18ea910029",
+      "prompt_version_id": 2,
+      "model": "qwen3:8b",
+      "attempt": 1,
+      "status": "success",
+      "input_tokens": 154,
+      "output_tokens": 51,
+      "duration_ms": 2473,
+      "created_at": "2026-11-26T17:38:26.923Z"
+    },
+    {
+      "operation": "judge",
+      "sample_id": "efd349d2ae0c42cbbc2e33aa0c222aee",
+      "prompt_version_id": 2,
+      "model": "qwen3:8b",
+      "attempt": 1,
+      "status": "success",
+      "input_tokens": 154,
+      "output_tokens": 54,
+      "duration_ms": 2466,
+      "created_at": "2026-11-26T17:38:29.410Z"
+    }
+  ],
+  "sources": [
+    "reviews",
+    "review_judgments",
+    "samples",
+    "prompt_versions",
+    "prompt_state",
+    "llm_calls"
+  ]
+}

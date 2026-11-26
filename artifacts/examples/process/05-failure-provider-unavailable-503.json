@@ -1,0 +1,96 @@
+{
+  "name": "05-failure-provider-unavailable-503",
+  "scenario": "Failure. Simulator fault: every model call returns HTTP 500. The gateway tries 3 times, then the API answers 503 with Retry-After. The idempotency record is left as `retryable_failed`, so the same key can be retried.",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:4000/process",
+    "headers": {
+      "Content-Type": "application/json",
+      "Idempotency-Key": "1cb502cd-98d8-4866-9962-545491e7a6a3"
+    },
+    "body": {
+      "message": "test 1"
+    }
+  },
+  "response": {
+    "status": 503,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e7c8cb54993c4efb9bc1e8494863a397",
+      "Retry-After": "<seconds, not stored>"
+    },
+    "body": {
+      "code": "provider_unavailable",
+      "message": "The model server is unavailable",
+      "retryable": true
+    }
+  },
+  "observed": {
+    "provider": "simulator",
+    "model": "fake",
+    "prompt_version": 2,
+    "sample": null,
+    "llm_calls": [
+      {
+        "attempt": 1,
+        "operation": "process",
+        "provider": "simulator",
+        "model": "fake",
+        "prompt_version_id": 2,
+        "status": "error",
+        "error_code": "provider_unavailable",
+        "error_message": "HTTP 500",
+        "input_tokens": null,
+        "output_tokens": null,
+        "duration_ms": 3,
+        "created_at": "2026-11-26T17:39:03.949Z"
+      },
+      {
+        "attempt": 2,
+        "operation": "process",
+        "provider": "simulator",
+        "model": "fake",
+        "prompt_version_id": 2,
+        "status": "error",
+        "error_code": "provider_unavailable",
+        "error_message": "HTTP 500",
+        "input_tokens": null,
+        "output_tokens": null,
+        "duration_ms": 6,
+        "created_at": "2026-11-26T17:39:04.438Z"
+      },
+      {
+        "attempt": 3,
+        "operation": "process",
+        "provider": "simulator",
+        "model": "fake",
+        "prompt_version_id": 2,
+        "status": "error",
+        "error_code": "provider_unavailable",
+        "error_message": "HTTP 500",
+        "input_tokens": null,
+        "output_tokens": null,
+        "duration_ms": 6,
+        "created_at": "2026-11-26T17:39:05.107Z"
+      }
+    ],
+    "idempotency_record": {
+      "key": "1cb502cd-98d8-4866-9962-545491e7a6a3",
+      "status": "retryable_failed",
+      "request_hash": "2f2bcdb6931715d076de5ca7268b45b8c0b693afe98595e584466171560cce6b",
+      "response_status": null,
+      "sample_id": null,
+      "created_at": "2026-11-26T17:39:03.934Z",
+      "updated_at": "2026-11-26T17:39:05.125Z"
+    }
+  },
+  "sources": [
+    "idempotency_requests",
+    "llm_calls",
+    "artifacts/session-logs.txt (status and error_code)"
+  ],
+  "notes": [
+    "The DB stores no body for a retryable failure (response_body is null). The body is rebuilt from app/services/processing.py error_body() and the message of the failure class in app/llm/errors.py.",
+    "The DB stores only a hash of the request body. The message was recovered and checked against idempotency_requests.request_hash."
+  ]
+}

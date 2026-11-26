@@ -1,0 +1,82 @@
+{
+  "name": "08-billing-v2-after-promotion",
+  "scenario": "The body of example 07 sent again with a new key after the fault was cleared, now on Ollama. Prompt v2 (promoted by the review) classifies it as `billing`.",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:4000/process",
+    "headers": {
+      "Content-Type": "application/json",
+      "Idempotency-Key": "e1036bb2-0dae-4206-b371-d7068e200393"
+    },
+    "body": {
+      "message": "I have an issue with billing"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f2b1680922b446dc9cef3f914500182e"
+    },
+    "body": {
+      "request_id": "f2b1680922b446dc9cef3f914500182e",
+      "sample_id": "45fc5ba9ecdf447ba6534ad221740376",
+      "prompt_version": 2,
+      "record": {
+        "intent": "billing",
+        "urgency": "high"
+      }
+    }
+  },
+  "observed": {
+    "provider": "ollama",
+    "model": "qwen3:0.6b",
+    "model_config": {
+      "num_ctx": 8192,
+      "num_predict": 256,
+      "seed": 42,
+      "temperature": 0.0,
+      "think": false
+    },
+    "prompt_version": 2,
+    "sample": {
+      "id": "45fc5ba9ecdf447ba6534ad221740376",
+      "input": "I have an issue with billing",
+      "output": {
+        "intent": "billing",
+        "urgency": "high"
+      },
+      "created_at": "2026-11-26T17:48:45.853Z"
+    },
+    "llm_calls": [
+      {
+        "attempt": 1,
+        "operation": "process",
+        "provider": "ollama",
+        "model": "qwen3:0.6b",
+        "prompt_version_id": 2,
+        "status": "success",
+        "error_code": null,
+        "error_message": null,
+        "input_tokens": 88,
+        "output_tokens": 14,
+        "duration_ms": 413,
+        "created_at": "2026-11-26T17:48:45.435Z"
+      }
+    ],
+    "idempotency_record": {
+      "key": "e1036bb2-0dae-4206-b371-d7068e200393",
+      "status": "completed",
+      "request_hash": "6c68c237ef679613b9e6ec74feb66886b5286526f4ed407370e88655657e6476",
+      "response_status": 200,
+      "sample_id": "45fc5ba9ecdf447ba6534ad221740376",
+      "created_at": "2026-11-26T17:48:45.432Z",
+      "updated_at": "2026-11-26T17:48:45.855Z"
+    }
+  },
+  "sources": [
+    "idempotency_requests",
+    "samples",
+    "llm_calls"
+  ]
+}

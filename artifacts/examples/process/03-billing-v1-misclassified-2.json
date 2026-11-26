@@ -1,0 +1,82 @@
+{
+  "name": "03-billing-v1-misclassified-2",
+  "scenario": "Second billing message on prompt v1, also answered `other`.",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:4000/process",
+    "headers": {
+      "Content-Type": "application/json",
+      "Idempotency-Key": "76d359f2-47f2-4b6c-be8e-d9752c1494a8"
+    },
+    "body": {
+      "message": "billing 2"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "dbc5b16a9cf5457faea341231f23dd96"
+    },
+    "body": {
+      "request_id": "dbc5b16a9cf5457faea341231f23dd96",
+      "sample_id": "d32030691da243cd8b1c2a18ea910029",
+      "prompt_version": 1,
+      "record": {
+        "intent": "other",
+        "urgency": "high"
+      }
+    }
+  },
+  "observed": {
+    "provider": "ollama",
+    "model": "qwen3:0.6b",
+    "model_config": {
+      "num_ctx": 8192,
+      "num_predict": 256,
+      "seed": 42,
+      "temperature": 0.0,
+      "think": false
+    },
+    "prompt_version": 1,
+    "sample": {
+      "id": "d32030691da243cd8b1c2a18ea910029",
+      "input": "billing 2",
+      "output": {
+        "intent": "other",
+        "urgency": "high"
+      },
+      "created_at": "2026-11-26T17:37:40.622Z"
+    },
+    "llm_calls": [
+      {
+        "attempt": 1,
+        "operation": "process",
+        "provider": "ollama",
+        "model": "qwen3:0.6b",
+        "prompt_version_id": 1,
+        "status": "success",
+        "error_code": null,
+        "error_message": null,
+        "input_tokens": 99,
+        "output_tokens": 14,
+        "duration_ms": 159,
+        "created_at": "2026-11-26T17:37:40.453Z"
+      }
+    ],
+    "idempotency_record": {
+      "key": "76d359f2-47f2-4b6c-be8e-d9752c1494a8",
+      "status": "completed",
+      "request_hash": "4d347650104513eecfcbc051e5d65f8411774001613afc8ee3fa6cb6e782a43d",
+      "response_status": 200,
+      "sample_id": "d32030691da243cd8b1c2a18ea910029",
+      "created_at": "2026-11-26T17:37:40.450Z",
+      "updated_at": "2026-11-26T17:37:40.625Z"
+    }
+  },
+  "sources": [
+    "idempotency_requests",
+    "samples",
+    "llm_calls"
+  ]
+}

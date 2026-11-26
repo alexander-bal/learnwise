@@ -1,0 +1,71 @@
+{
+  "name": "02-idempotent-replay",
+  "scenario": "The same Idempotency-Key and body sent again. The API returns the stored response without calling the model: same sample_id and request_id in the body, a new X-Request-ID on the response.",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:4000/process",
+    "headers": {
+      "Content-Type": "application/json",
+      "Idempotency-Key": "1ccbe9de-8486-4886-a788-2a000e5e7f38"
+    },
+    "body": {
+      "message": "billing 1"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "55586bad401c4f5c9e93aad6b8d36ace"
+    },
+    "body": {
+      "request_id": "85204a90e70d433ea6d0857a38a63907",
+      "sample_id": "efd349d2ae0c42cbbc2e33aa0c222aee",
+      "prompt_version": 1,
+      "record": {
+        "intent": "other",
+        "urgency": "high"
+      }
+    }
+  },
+  "observed": {
+    "provider": "ollama",
+    "model": "qwen3:0.6b",
+    "model_config": {
+      "num_ctx": 8192,
+      "num_predict": 256,
+      "seed": 42,
+      "temperature": 0.0,
+      "think": false
+    },
+    "prompt_version": 1,
+    "sample": {
+      "id": "efd349d2ae0c42cbbc2e33aa0c222aee",
+      "input": "billing 1",
+      "output": {
+        "intent": "other",
+        "urgency": "high"
+      },
+      "created_at": "2026-11-26T17:37:33.955Z"
+    },
+    "llm_calls": [],
+    "idempotency_record": {
+      "key": "1ccbe9de-8486-4886-a788-2a000e5e7f38",
+      "status": "completed",
+      "request_hash": "69ca6b4473f3e7484ae48929563fc6e05a6d8b31bb42d1856b2d92f4f3d022df",
+      "response_status": 200,
+      "sample_id": "efd349d2ae0c42cbbc2e33aa0c222aee",
+      "created_at": "2026-11-26T17:37:33.639Z",
+      "updated_at": "2026-11-26T17:37:33.967Z"
+    }
+  },
+  "sources": [
+    "idempotency_requests",
+    "samples",
+    "llm_calls",
+    "artifacts/session-logs.txt (replayed request id)"
+  ],
+  "notes": [
+    "The replay makes no model call and writes no row, so its own request id is only in the API log."
+  ]
+}

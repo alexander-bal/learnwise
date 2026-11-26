@@ -1,0 +1,82 @@
+{
+  "name": "09-simulator-success",
+  "scenario": "Success with the simulator provider (model `fake`). No keyword matches, so `other` / `normal`.",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:4000/process",
+    "headers": {
+      "Content-Type": "application/json",
+      "Idempotency-Key": "4ca7c9db-3f61-45f0-9cf8-40d42b1dc97f"
+    },
+    "body": {
+      "message": "Test sample with simulator"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8bd3959b713d4b1499c8914aca3a1a29"
+    },
+    "body": {
+      "request_id": "8bd3959b713d4b1499c8914aca3a1a29",
+      "sample_id": "f836c5e2e34d495da01f0c2b7d89c9f9",
+      "prompt_version": 2,
+      "record": {
+        "intent": "other",
+        "urgency": "normal"
+      }
+    }
+  },
+  "observed": {
+    "provider": "simulator",
+    "model": "fake",
+    "model_config": {
+      "num_ctx": 8192,
+      "num_predict": 256,
+      "seed": 42,
+      "temperature": 0.0,
+      "think": false
+    },
+    "prompt_version": 2,
+    "sample": {
+      "id": "f836c5e2e34d495da01f0c2b7d89c9f9",
+      "input": "Test sample with simulator",
+      "output": {
+        "intent": "other",
+        "urgency": "normal"
+      },
+      "created_at": "2026-11-26T17:49:04.711Z"
+    },
+    "llm_calls": [
+      {
+        "attempt": 1,
+        "operation": "process",
+        "provider": "simulator",
+        "model": "fake",
+        "prompt_version_id": 2,
+        "status": "success",
+        "error_code": null,
+        "error_message": null,
+        "input_tokens": 48,
+        "output_tokens": 4,
+        "duration_ms": 8,
+        "created_at": "2026-11-26T17:49:04.698Z"
+      }
+    ],
+    "idempotency_record": {
+      "key": "4ca7c9db-3f61-45f0-9cf8-40d42b1dc97f",
+      "status": "completed",
+      "request_hash": "bb9dae1ee5bd5bc601e7a49f3b01f25c91c85b864a4f4a02c3eb91212c3880ba",
+      "response_status": 200,
+      "sample_id": "f836c5e2e34d495da01f0c2b7d89c9f9",
+      "created_at": "2026-11-26T17:49:04.695Z",
+      "updated_at": "2026-11-26T17:49:04.713Z"
+    }
+  },
+  "sources": [
+    "idempotency_requests",
+    "samples",
+    "llm_calls"
+  ]
+}

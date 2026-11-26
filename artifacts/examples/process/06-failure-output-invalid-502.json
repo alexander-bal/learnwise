@@ -1,0 +1,95 @@
+{
+  "name": "06-failure-output-invalid-502",
+  "scenario": "Failure. Simulator fault: the model returns output that violates the triage schema. The gateway validates and retries 3 times, then the API answers 502. No sample is stored.",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:4000/process",
+    "headers": {
+      "Content-Type": "application/json",
+      "Idempotency-Key": "3cedfc35-4426-45f0-97a1-042d67a2600c"
+    },
+    "body": {
+      "message": "I have an issue"
+    }
+  },
+  "response": {
+    "status": 502,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "51a4f7f27fe54ebc99fb87b725531808"
+    },
+    "body": {
+      "code": "output_invalid",
+      "message": "The model returned an invalid output",
+      "retryable": true
+    }
+  },
+  "observed": {
+    "provider": "simulator",
+    "model": "fake",
+    "prompt_version": 2,
+    "sample": null,
+    "llm_calls": [
+      {
+        "attempt": 1,
+        "operation": "process",
+        "provider": "simulator",
+        "model": "fake",
+        "prompt_version_id": 2,
+        "status": "error",
+        "error_code": "output_invalid",
+        "error_message": "output is schema violation",
+        "input_tokens": null,
+        "output_tokens": null,
+        "duration_ms": 5,
+        "created_at": "2026-11-26T17:39:33.481Z"
+      },
+      {
+        "attempt": 2,
+        "operation": "process",
+        "provider": "simulator",
+        "model": "fake",
+        "prompt_version_id": 2,
+        "status": "error",
+        "error_code": "output_invalid",
+        "error_message": "output is schema violation",
+        "input_tokens": null,
+        "output_tokens": null,
+        "duration_ms": 8,
+        "created_at": "2026-11-26T17:39:33.822Z"
+      },
+      {
+        "attempt": 3,
+        "operation": "process",
+        "provider": "simulator",
+        "model": "fake",
+        "prompt_version_id": 2,
+        "status": "error",
+        "error_code": "output_invalid",
+        "error_message": "output is schema violation",
+        "input_tokens": null,
+        "output_tokens": null,
+        "duration_ms": 6,
+        "created_at": "2026-11-26T17:39:34.350Z"
+      }
+    ],
+    "idempotency_record": {
+      "key": "3cedfc35-4426-45f0-97a1-042d67a2600c",
+      "status": "retryable_failed",
+      "request_hash": "484d500626b020f4ba8d123df5fca0b25cce646a80832ee4299a489fc25ba402",
+      "response_status": null,
+      "sample_id": null,
+      "created_at": "2026-11-26T17:39:33.477Z",
+      "updated_at": "2026-11-26T17:39:34.366Z"
+    }
+  },
+  "sources": [
+    "idempotency_requests",
+    "llm_calls",
+    "artifacts/session-logs.txt (status and error_code)"
+  ],
+  "notes": [
+    "The DB stores no body for a retryable failure (response_body is null). The body is rebuilt from app/services/processing.py error_body() and the message of the failure class in app/llm/errors.py.",
+    "The DB stores only a hash of the request body. The message was recovered and checked against idempotency_requests.request_hash."
+  ]
+}

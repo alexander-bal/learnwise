@@ -1,0 +1,95 @@
+{
+  "name": "07-failure-output-invalid-502-billing",
+  "scenario": "Failure. Same schema-violation fault on prompt v2, 3 attempts, 502.",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:4000/process",
+    "headers": {
+      "Content-Type": "application/json",
+      "Idempotency-Key": "b87e9c43-c69e-4402-98ae-acc18c640510"
+    },
+    "body": {
+      "message": "I have an issue with billing"
+    }
+  },
+  "response": {
+    "status": 502,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d320b3d4600e47dbb71f515d5d3245f7"
+    },
+    "body": {
+      "code": "output_invalid",
+      "message": "The model returned an invalid output",
+      "retryable": true
+    }
+  },
+  "observed": {
+    "provider": "simulator",
+    "model": "fake",
+    "prompt_version": 2,
+    "sample": null,
+    "llm_calls": [
+      {
+        "attempt": 1,
+        "operation": "process",
+        "provider": "simulator",
+        "model": "fake",
+        "prompt_version_id": 2,
+        "status": "error",
+        "error_code": "output_invalid",
+        "error_message": "output is schema violation",
+        "input_tokens": null,
+        "output_tokens": null,
+        "duration_ms": 8,
+        "created_at": "2026-11-26T17:48:30.882Z"
+      },
+      {
+        "attempt": 2,
+        "operation": "process",
+        "provider": "simulator",
+        "model": "fake",
+        "prompt_version_id": 2,
+        "status": "error",
+        "error_code": "output_invalid",
+        "error_message": "output is schema violation",
+        "input_tokens": null,
+        "output_tokens": null,
+        "duration_ms": 6,
+        "created_at": "2026-11-26T17:48:31.189Z"
+      },
+      {
+        "attempt": 3,
+        "operation": "process",
+        "provider": "simulator",
+        "model": "fake",
+        "prompt_version_id": 2,
+        "status": "error",
+        "error_code": "output_invalid",
+        "error_message": "output is schema violation",
+        "input_tokens": null,
+        "output_tokens": null,
+        "duration_ms": 7,
+        "created_at": "2026-11-26T17:48:31.816Z"
+      }
+    ],
+    "idempotency_record": {
+      "key": "b87e9c43-c69e-4402-98ae-acc18c640510",
+      "status": "retryable_failed",
+      "request_hash": "6c68c237ef679613b9e6ec74feb66886b5286526f4ed407370e88655657e6476",
+      "response_status": null,
+      "sample_id": null,
+      "created_at": "2026-11-26T17:48:30.877Z",
+      "updated_at": "2026-11-26T17:48:31.835Z"
+    }
+  },
+  "sources": [
+    "idempotency_requests",
+    "llm_calls"
+  ],
+  "notes": [
+    "This request is after the end of session-logs.txt; the status comes from the final llm_calls error code `output_invalid`.",
+    "The DB stores no body for a retryable failure (response_body is null). The body is rebuilt from app/services/processing.py error_body() and the message of the failure class in app/llm/errors.py.",
+    "The DB stores only a hash of the request body. The message was recovered and checked against idempotency_requests.request_hash."
+  ]
+}
