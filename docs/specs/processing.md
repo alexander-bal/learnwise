@@ -29,6 +29,7 @@ The prompt improves through reviews, which are specified in [prompt-improvement.
 - `POST /process` SHALL accept one message of 1 to 4,000 characters (configurable) and return a triage record, the stored sample's id, the prompt version used, and the request id. Other input SHALL be refused with HTTP 422 before any model call.
 - A triage record SHALL have exactly: `intent` (`billing`, `shipping`, `technical_issue`, `account`, `cancellation`, `other`), and `urgency` (`low`, `normal`, `high`).
 - The model SHALL be asked for output constrained to this schema, and the service SHALL validate whatever comes back. An invalid output SHALL never be returned or stored.
+- The content of the prompt version (FR-2) SHALL be sent as the system prompt, if the model supports one.
 - The message SHALL be sent as user content and SHALL NOT be interpolated into the prompt.
 - A request SHALL use the prompt that was active when it started, to its end.
 - The sample, the result of its LLM call, and the completion of its idempotency record SHALL be committed in one transaction, before the response is sent. A failed request stores no sample.
