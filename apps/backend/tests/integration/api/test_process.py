@@ -82,18 +82,74 @@ async def test_the_seeded_prompt_does_not_know_cancellation(client: httpx.AsyncC
     assert response.json()["record"] == {"intent": "other", "urgency": "high"}
 
 
+INVALID_REQUEST = {"code": "invalid_request", "message": "Invalid request", "retryable": False}
+BAD_LENGTH = {**INVALID_REQUEST, "message": "message must be 1 to 4000 characters"}
+
+
 @pytest.mark.parametrize(
-    "payload",
-    [{"message": ""}, {"message": "x" * 4001}, {}, {"message": 5}, {"message": "a", "extra": 1}],
+    ("payload", "expected"),
+    [
+        ({"message": ""}, BAD_LENGTH),
+        ({"message": "x" * 4001}, BAD_LENGTH),
+        ({}, INVALID_REQUEST),
+        ({"message": 5}, INVALID_REQUEST),
+        ({"message": "a", "extra": 1}, INVALID_REQUEST),
+    ],
 )
 async def test_other_input_is_refused_before_any_model_call(
-    client: httpx.AsyncClient, sessionmaker: async_sessionmaker, payload: dict[str, Any]
+    client: httpx.AsyncClient,
+    sessionmaker: async_sessionmaker,
+    payload: dict[str, Any],
+    expected: dict[str, Any],
 ) -> None:
     response = await client.post("/process", json=payload)
 
     assert response.status_code == 422
-    assert response.json()["retryable"] is False
+    assert response.json() == expected
     assert await rows(sessionmaker, "SELECT id FROM llm_calls") == []
+
+
+async def test_the_longest_allowed_message_is_accepted(client: httpx.AsyncClient) -> None:
+    assert (await post(client, "x" * 4000)).status_code == 200
+
+
+@pytest.mark.parametrize(
+    "content",
+    [b"{not json", b'["a list"]', b'"a string"', b"null"],
+    ids=["malformed", "list", "string", "null"],
+)
+async def test_a_body_that_is_not_a_json_object_is_refused(
+    client: httpx.AsyncClient, sessionmaker: async_sessionmaker, content: bytes
+) -> None:
+    response = await client.post(
+        "/process", content=content, headers={"Content-Type": "application/json"}
+    )
+
+    assert response.status_code == 422
+    assert response.json() == INVALID_REQUEST
+    assert await rows(sessionmaker, "SELECT id FROM llm_calls") == []
+
+
+@pytest.mark.parametrize("key", ["", "k" * 256], ids=["empty", "too-long"])
+async def test_an_idempotency_key_out_of_bounds_is_refused_and_not_stored(
+    client: httpx.AsyncClient, sessionmaker: async_sessionmaker, key: str
+) -> None:
+    response = await post(client, BILLING, key=key)
+
+    assert response.status_code == 422
+    assert response.json() == INVALID_REQUEST
+    assert await rows(sessionmaker, "SELECT key FROM idempotency_requests") == []
+    assert await rows(sessionmaker, "SELECT id FROM llm_calls") == []
+
+
+async def test_the_longest_allowed_idempotency_key_is_accepted(
+    client: httpx.AsyncClient, sessionmaker: async_sessionmaker
+) -> None:
+    response = await post(client, BILLING, key="k" * 255)
+
+    assert response.status_code == 200
+    [stored] = await rows(sessionmaker, "SELECT key FROM idempotency_requests")
+    assert stored["key"] == "k" * 255
 
 
 # --- AC-2 -------------------------------------------------------------------------------
@@ -256,7 +312,9 @@ async def test_ac3_provider_failures_are_bounded_and_classified(
         assert "Retry-After" in response.headers
     calls = await rows(sessionmaker, "SELECT * FROM llm_calls ORDER BY attempt")
     assert [c["attempt"] for c in calls] == list(range(1, attempts + 1))
-    assert all(c["status"] in ("error", "timeout") for c in calls)
+    # An attempt with no answer in time is `timeout`; every other failure is `error`.
+    expected_status = "timeout" if fault == "never_answer" else "error"
+    assert [c["status"] for c in calls] == [expected_status] * attempts
     assert all(c["request_id"] == f"ac3-{fault}" for c in calls)
     assert await rows(sessionmaker, "SELECT id FROM samples") == []
     assert elapsed < migrated.request_deadline_seconds + 0.3

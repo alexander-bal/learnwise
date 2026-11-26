@@ -1,5 +1,6 @@
 """POST /reviews and the console's read endpoints (Prompt Improvement FR-1)."""
 
+import asyncio
 import json
 
 import httpx
@@ -76,3 +77,14 @@ async def test_reviews_are_listed_newest_first_and_read_one_by_one(
     missing = await client.get("/reviews/nope")
     assert missing.status_code == 404
     assert missing.json()["code"] == "not_found"
+
+
+async def test_concurrent_starts_open_exactly_one_review(
+    client: httpx.AsyncClient, sessionmaker: async_sessionmaker
+) -> None:
+    responses = await asyncio.gather(*(client.post("/reviews") for _ in range(5)))
+
+    assert sorted(r.status_code for r in responses) == [202, 409, 409, 409, 409]
+    [opened] = [r.json()["review_id"] for r in responses if r.status_code == 202]
+    assert {r.json()["review_id"] for r in responses if r.status_code == 409} == {opened}
+    assert await scalar(sessionmaker, "SELECT count(*) FROM reviews") == 1

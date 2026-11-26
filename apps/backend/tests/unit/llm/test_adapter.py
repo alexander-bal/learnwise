@@ -85,6 +85,11 @@ async def test_a_valid_answer_is_a_record_with_tokens_and_the_request_is_constra
         (answer('{"intent": "refund", "urgency": "low"}'), OutputInvalid),
         (answer('{"intent": "billing", "urgency": "low"}', done_reason="length"), OutputInvalid),
         (httpx.Response(200, text="<html>"), OutputInvalid),
+        (httpx.Response(200, json=["not", "an", "object"]), OutputInvalid),
+        (httpx.Response(200, json={"done": True}), OutputInvalid),
+        (httpx.Response(200, json={"message": {"content": None}}), OutputInvalid),
+        (httpx.Response(200, json={"message": {"content": 5}}), OutputInvalid),
+        (httpx.Response(200, json={"message": "no content key"}), OutputInvalid),
     ],
 )
 async def test_failures_are_classified(
@@ -107,6 +112,12 @@ def test_retry_after_is_read_as_seconds_or_an_http_date() -> None:
     assert parse_retry_after("soon") is None
     later = format_datetime(datetime.now(UTC) + timedelta(seconds=30), usegmt=True)
     assert 28 <= (parse_retry_after(later) or 0) <= 30
+
+
+def test_a_retry_after_in_the_past_or_negative_is_zero_not_negative() -> None:
+    assert parse_retry_after("-5") == 0
+    earlier = format_datetime(datetime.now(UTC) - timedelta(seconds=30), usegmt=True)
+    assert parse_retry_after(earlier) == 0
 
 
 async def test_keep_alive_is_sent_only_when_the_settings_ask_for_it() -> None:

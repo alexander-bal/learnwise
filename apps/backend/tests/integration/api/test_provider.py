@@ -16,3 +16,24 @@ async def test_the_provider_switches_between_profiles_and_refuses_an_unknown_one
     back = await client.put("/_provider", json={"provider": "simulator"})
     assert back.json()["current"] == "simulator"
     assert (await client.put("/_provider", json={"provider": "other"})).status_code == 422
+
+
+INVALID_REQUEST = {"code": "invalid_request", "message": "Invalid request", "retryable": False}
+
+
+async def test_an_invalid_switch_is_refused_and_keeps_the_current_provider(
+    client: httpx.AsyncClient,
+) -> None:
+    assert (await client.put("/_provider", json={"provider": "ollama"})).status_code == 200
+    refused = [
+        await client.put("/_provider", json={"provider": "other"}),
+        await client.put("/_provider", json={}),
+        await client.put(
+            "/_provider", content=b"{not json", headers={"Content-Type": "application/json"}
+        ),
+    ]
+
+    assert [r.status_code for r in refused] == [422, 422, 422]
+    assert all(r.json() == INVALID_REQUEST for r in refused)
+    # Not the default, so a refusal that reset the choice would show.
+    assert (await client.get("/_provider")).json()["current"] == "ollama"
