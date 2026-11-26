@@ -125,6 +125,7 @@ export const FAULT_TYPES = [
   "malformed_json",
   "schema_violation",
   "truncated",
+  "harmful_proposal",
 ] as const;
 export type FaultType = (typeof FAULT_TYPES)[number];
 
@@ -139,6 +140,77 @@ export interface FaultIn {
 export interface Fault extends FaultIn {
   id: number;
 }
+
+export type ReviewStatus = "pending" | "running" | "completed" | "failed";
+export type ReviewOutcome = "promoted" | "rejected" | "no_changes" | "no_proposal" | "insufficient_samples";
+
+export interface Review {
+  id: string;
+  request_id: string;
+  status: ReviewStatus;
+  outcome: ReviewOutcome | null;
+  base_prompt_id: number;
+  candidate_prompt_id: number | null;
+  attempts: number;
+  next_attempt_at: string | null;
+  lease_expires_at: string | null;
+  expires_at: string;
+  provider: string;
+  judge_model: string;
+  processing_model: string;
+  evaluation_config: Record<string, unknown>;
+  error_code: string | null;
+  error_message: string | null;
+  created_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  samples: number;
+  base_score: number | null;
+  candidate_score: number | null;
+  left_out: number;
+}
+
+export interface JudgedOutput {
+  output: TriageRecord | null;
+  expected: TriageRecord | null;
+  judged: boolean;
+  unjudgeable: boolean;
+  in_error: boolean;
+  points: number;
+  explanation: string | null;
+}
+
+export interface JudgmentPair {
+  sample_id: string;
+  message: string;
+  sample_created_at: string;
+  base: JudgedOutput | null;
+  candidate: JudgedOutput | null;
+  left_out: boolean;
+}
+
+export interface ReviewPrompt {
+  id: number;
+  parent_id: number | null;
+  content: string;
+  change_reason: string;
+  created_at: string;
+  status: PromptStatus;
+}
+
+export interface ReviewDetail extends Review {
+  base_prompt: ReviewPrompt | null;
+  candidate_prompt: ReviewPrompt | null;
+  judgments: JudgmentPair[];
+  calls: LlmCall[];
+}
+
+export type StartReviewOutcome =
+  | { kind: "started"; reviewId: string }
+  | { kind: "in_progress"; reviewId: string }
+  | { kind: "error"; message: string };
+
+export const isOpenReview = (r: Pick<Review, "status">) => r.status === "pending" || r.status === "running";
 
 async function describeFailure(response: Response): Promise<string> {
   try {
@@ -206,6 +278,31 @@ export const removeFault = (id: number) =>
   request<void>(`/sim/_sim/faults/${id}`, { method: "DELETE" });
 
 export const clearFaults = () => request<void>("/sim/_sim/faults", { method: "DELETE" });
+
+export const fetchReviews = (offset: number, limit: number, signal?: AbortSignal) =>
+  request<Page<Review>>(`/api/reviews${query({ offset, limit })}`, { signal });
+
+export const fetchReview = (reviewId: string, signal?: AbortSignal) =>
+  request<ReviewDetail>(`/api/reviews/${encodeURIComponent(reviewId)}`, { signal });
+
+/** POST /reviews: started (202), refused because one is open (409), or failed. */
+export async function startReview(): Promise<StartReviewOutcome> {
+  let response: Response;
+  try {
+    response = await fetch("/api/reviews", { method: "POST", headers: { Accept: "application/json" } });
+  } catch (e) {
+    return { kind: "error", message: `Could not reach the server. ${e instanceof Error ? e.message : String(e)}` };
+  }
+  if (response.status === 202) {
+    const body = (await response.json()) as { review_id: string };
+    return { kind: "started", reviewId: body.review_id };
+  }
+  if (response.status === 409) {
+    const body = (await response.json()) as { review_id: string };
+    return { kind: "in_progress", reviewId: body.review_id };
+  }
+  return { kind: "error", message: await describeFailure(response) };
+}
 
 /** POST /process, keeping every outcome: a record or a classified error. */
 export async function processMessage(

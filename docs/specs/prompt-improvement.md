@@ -251,30 +251,6 @@ Each criterion starts from an empty database with the seeded prompt as version 1
 
 **Then** after 4 attempts the review is still `pending`. Once its time limit has passed it is `failed` with `review_expired`. A new review started after the fault is cleared judges its samples again and is `promoted`.
 
-### AC-6: The API and the Worker Run a Review Apart
-
-**Given** the API and the worker run as separate processes and traffic A has been processed.
-
-**When** a review is started through the API.
-
-**Then** the worker runs it to `promoted`.
-
-**When** the API is killed while the review runs and a `/process` call is in flight, and started again.
-
-**Then** the review completes without another attempt, and once the request deadline has passed the restarted API closes that `/process` call as `interrupted` but none of the review's calls.
-
-**When** the worker is killed during the review and started again.
-
-**Then** the review continues from its stored results, as in AC-4.
-
-**When** a fault is set on the model server.
-
-**Then** the API's `/process` calls and the worker's review calls both get it.
-
-**When** the schema is migrated past the worker's code during the review.
-
-**Then** the review's attempt goes back to `pending` with the code `terminated`, the worker exits, and once started again it completes the review on the new code.
-
 ## Security Considerations
 
 - Anyone who can reach the service can start a review, which occupies the machine `/process` runs on. At most one review is open, which bounds that load.

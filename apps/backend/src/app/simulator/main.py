@@ -13,7 +13,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 
-from app.simulator.answers import MODELS, classify, count_tokens
+from app.simulator.answers import MODELS, answer, count_tokens
 from app.simulator.faults import Fault, FaultIn, FaultStore
 
 app = FastAPI(title="Model server simulator")
@@ -117,7 +117,13 @@ async def chat(request: Request) -> JSONResponse:
     elif decided is not None:
         content = decided
     else:
-        content = json.dumps(classify(message, prompt, model=model))
+        harmful = any(f.type == "harmful_proposal" for f in faults.matching(model))
+        try:
+            content = json.dumps(
+                answer(model, prompt, message, body.get("format"), harmful=harmful)
+            )
+        except ValueError, KeyError, TypeError:
+            return JSONResponse({"error": "invalid request"}, status_code=400)
     return JSONResponse(
         {
             "model": model,

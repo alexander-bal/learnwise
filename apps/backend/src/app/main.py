@@ -5,7 +5,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.requests import Request
 
 from app.api.middleware import RequestContextMiddleware
-from app.api.routes import health, process, prompts, provider, records
+from app.api.routes import health, process, prompts, provider, records, reviews
 from app.lifespan import lifespan
 
 
@@ -37,6 +37,7 @@ def create_app() -> FastAPI:
     app.include_router(process.router)
     app.include_router(records.router)
     app.include_router(provider.router)
+    app.include_router(reviews.router)
     return app
 
 

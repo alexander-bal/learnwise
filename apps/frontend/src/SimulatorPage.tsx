@@ -24,6 +24,7 @@ const FAULT_HELP: Record<FaultType, string> = {
   malformed_json: "Answers with output that is not JSON",
   schema_violation: "Answers with JSON that breaks the schema",
   truncated: "Answers with output cut off at the token limit",
+  harmful_proposal: "A review's proposal names no intent (proposal calls only)",
 };
 
 function describe(fault: Fault): string {

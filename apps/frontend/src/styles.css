@@ -503,3 +503,54 @@ main:focus,
 h2[tabindex="-1"]:focus {
   outline: none;
 }
+
+/* Reviews */
+.badge-pending {
+  color: var(--warn);
+}
+
+.badge-promoted {
+  color: var(--ok);
+}
+
+.badge-no_changes,
+.badge-no_proposal,
+.badge-insufficient_samples {
+  color: var(--muted);
+}
+
+.prompt-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1rem;
+}
+
+.prompt-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  min-width: 0;
+}
+
+.prompt-card h4 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.prompt-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.small {
+  font-size: 0.8rem;
+}
+
+.in-error {
+  color: var(--bad);
+}

@@ -67,6 +67,30 @@ class Settings(BaseSettings):
     model_seed: int = 42
     keep_model_warm: bool = True
 
+    # Prompt Improvement FR-2.
+    review_sample_limit: int = 10
+    proposal_messages_max_chars: int = 6000
+    proposal_prompt_max_chars: int = 4000
+    proposal_reason_max_chars: int = 500
+
+    # Prompt Improvement FR-3.
+    review_retry_base_seconds: float = 60.0
+    review_retry_max_seconds: float = 900.0
+    review_expiry_hours: float = 24.0
+    review_lease_seconds: float = 60.0
+    review_lease_renew_seconds: float = 20.0
+
+    # Prompt Improvement NFR-1.
+    review_max_attempts: int = 6
+    review_attempt_timeout_seconds: float = 30.0
+    review_backoff_base_seconds: float = 2.0
+    review_backoff_max_seconds: float = 60.0
+    review_concurrency: int = 1
+
+    # Prompt Improvement NFR-2.
+    judge_num_ctx: int = 16384
+    judge_num_predict: int = 4608
+
     @property
     def database_url(self) -> str:
         return f"sqlite+aiosqlite:///{self.database_path}"

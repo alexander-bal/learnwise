@@ -20,6 +20,8 @@ class CallContext:
     request_id: str
     prompt_version_id: int | None = None
     review_id: str | None = None
+    # Set up front for a review call, which belongs to one sample from the start.
+    sample_id: str | None = None
 
 
 def new_call(ctx: CallContext, *, provider: str, model: str, attempt: int) -> LlmCall:
@@ -27,6 +29,7 @@ def new_call(ctx: CallContext, *, provider: str, model: str, attempt: int) -> Ll
         id=uuid.uuid4().hex,
         request_id=ctx.request_id,
         review_id=ctx.review_id,
+        sample_id=ctx.sample_id,
         prompt_version_id=ctx.prompt_version_id,
         operation=ctx.operation,
         provider=provider,
@@ -51,18 +54,18 @@ async def close_call(
     error_code: str | None = None,
     error_message: str | None = None,
 ) -> None:
+    values = {
+        "status": status,
+        "duration_ms": duration_ms,
+        "completed_at": completed_at,
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "provider_request_id": provider_request_id,
+        "error_code": error_code,
+        "error_message": error_message,
+    }
+    if sample_id is not None:
+        values["sample_id"] = sample_id
     await session.execute(
-        update(LlmCall)
-        .where(LlmCall.id == call_id, LlmCall.status == "running")
-        .values(
-            status=status,
-            duration_ms=duration_ms,
-            completed_at=completed_at,
-            sample_id=sample_id,
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            provider_request_id=provider_request_id,
-            error_code=error_code,
-            error_message=error_message,
-        )
+        update(LlmCall).where(LlmCall.id == call_id, LlmCall.status == "running").values(values)
     )

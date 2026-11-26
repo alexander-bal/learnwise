@@ -4,6 +4,7 @@ import { LlmLogsPage } from "./LlmLogsPage";
 import { ProcessPage } from "./ProcessPage";
 import { PromptsPage } from "./PromptsPage";
 import { RequestsPage } from "./RequestsPage";
+import { ReviewsPage } from "./ReviewsPage";
 import { Link, useFocusOnChange, useLocation } from "./router";
 import { SamplesPage } from "./SamplesPage";
 import { SimulatorPage } from "./SimulatorPage";
@@ -13,6 +14,7 @@ const PAGES = [
   { path: "/", label: "Process", render: () => <ProcessPage /> },
   { path: "/samples", label: "Samples", render: () => <SamplesPage /> },
   { path: "/prompts", label: "Prompts", render: () => <PromptsPage /> },
+  { path: "/reviews", label: "Reviews", render: (url: URL) => <ReviewsPage selected={url.searchParams.get("id")} /> },
   { path: "/requests", label: "Requests", render: (url: URL) => <RequestsPage selected={url.searchParams.get("id")} /> },
   { path: "/llm-logs", label: "LLM Logs", render: (url: URL) => <LlmLogsPage requestId={url.searchParams.get("request_id") ?? ""} /> },
   { path: "/simulator", label: "Simulator", render: () => <SimulatorPage /> },
