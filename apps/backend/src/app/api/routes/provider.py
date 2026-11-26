@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.api.deps import GatewayDep, ProvidersDep
 from app.llm.gateway import LlmGateway
 from app.llm.provider import Providers
-from app.schemas.records import ProviderIn, ProviderOut, ProviderProfileOut
+from app.schemas.provider import ProviderIn, ProviderOut, ProviderProfileOut
 
 router = APIRouter(prefix="/_provider", tags=["provider"])
 

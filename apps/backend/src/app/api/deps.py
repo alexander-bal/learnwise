@@ -1,7 +1,7 @@
 from collections.abc import AsyncIterator
 from typing import Annotated
 
-from fastapi import Depends, Request
+from fastapi import Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.tasks import TaskTracker
@@ -36,3 +36,7 @@ ProcessingDep = Annotated[ProcessingService, Depends(get_processing)]
 ProvidersDep = Annotated[Providers, Depends(get_providers)]
 GatewayDep = Annotated[LlmGateway, Depends(get_gateway)]
 TasksDep = Annotated[TaskTracker, Depends(get_tasks)]
+
+# Paging for the console's list endpoints.
+Limit = Annotated[int, Query(ge=1, le=200)]
+Offset = Annotated[int, Query(ge=0)]

@@ -1,12 +1,10 @@
-from typing import Annotated
-
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
-from app.api.deps import ProvidersDep, SessionDep
+from app.api.deps import Limit, Offset, ProvidersDep, SessionDep
 from app.core.config import get_settings
-from app.schemas.records import Page
+from app.schemas.pagination import Page
 from app.schemas.reviews import ReviewDetailOut, ReviewInProgressOut, ReviewOut, ReviewStartOut
 from app.services import reviews
 
@@ -55,9 +53,7 @@ async def start_review(request: Request, providers: ProvidersDep) -> JSONRespons
 
 @router.get("")
 async def list_reviews(
-    session: SessionDep,
-    limit: Annotated[int, Query(ge=1, le=200)] = 50,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    session: SessionDep, limit: Limit = 50, offset: Offset = 0
 ) -> Page[ReviewOut]:
     """Reviews, newest first, with their scores so far. For the console."""
     return Page[ReviewOut].model_validate(

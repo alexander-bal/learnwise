@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from app.schemas.records import LlmCallOut
+from app.schemas.llm_calls import LlmCallOut
 
 
 class ReviewStartOut(BaseModel):

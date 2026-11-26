@@ -19,9 +19,9 @@ from app.llm.gateway import CallOutcome, LlmGateway, Stopped
 from app.llm.schemas import JudgeVerdict, TriageRecord, proposal_schema
 from app.models import LlmCall, PromptState, PromptVersion, Review, ReviewJudgment, Sample
 from app.models.review import OPEN_REVIEW_STATUSES
+from app.services.llm_calls import call_dict
 from app.services.processing import active_prompt
 from app.services.prompts import CandidateReview, derive_status
-from app.services.records import call_dict
 
 log = logging.getLogger(__name__)
 
